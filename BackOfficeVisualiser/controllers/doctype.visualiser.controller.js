@@ -10,8 +10,9 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
     $scope.getData = function() {
         doctypeApiResource.getViewModel().then(function (data) {
             if (data.documentTypes.length) {
-                $scope.docTypes = data.documentTypes;
-                $scope.filteredDocTypes = $scope.filterUnconnectedDocTypes(data.documentTypes);
+                $scope.sortedDocs = $scope.sortByCompositions(data.documentTypes);
+                $scope.docTypes = $scope.sortedDocs;
+                $scope.filteredDocTypes = $scope.filterUnconnectedDocTypes($scope.sortedDocs);
                 $scope.docTypes.forEach(function(docType) {
                     $scope.ids.push(docType.id);
                     $scope.names.push(docType.name);
@@ -193,6 +194,15 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             });
         }
         return filtered;
+    };
+
+    $scope.sortByCompositions = function(docTypes) {
+        if (docTypes && docTypes.length > 0) {
+            docTypes.sort(function(a, b) {
+                return a.compositions.length - b.compositions.length;
+            });
+        }
+        return docTypes;
     };
 
     /*---- Init ----*/
