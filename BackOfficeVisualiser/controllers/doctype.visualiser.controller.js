@@ -91,8 +91,8 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             .sortSubgroups(d3.descending)
             .matrix(data.matrix);
 
-        var width = parseInt(d3.select("#DocTypeVisualiserPlaceHolder").style("width"), 10),
-            height = parseInt(d3.select("#DocTypeVisualiserPlaceHolder").style("height"), 10),
+        var width = parseInt(d3.select("#DocTypeVisualiserPlaceHolder").style("width"), 10) - 200,
+            height = parseInt(d3.select("#DocTypeVisualiserPlaceHolder").style("height"), 10) - 200,
             r1 = height / 2,
             innerRadius = Math.min(width, height) * .41,
             outerRadius = innerRadius * 1.1;
