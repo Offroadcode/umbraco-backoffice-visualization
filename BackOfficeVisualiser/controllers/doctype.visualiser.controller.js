@@ -10,13 +10,21 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
     $scope.getData = function() {
         doctypeApiResource.getViewModel().then(function (data) {
             if (data.documentTypes.length) {
-                $scope.docTypes = $scope.filterUnconnectedDocTypes(data.documentTypes);
-                $scope.docTypes.forEach(function(docType, index) {
+                $scope.docTypes = data.documentTypes;
+                $scope.filteredDocTypes = $scope.filterUnconnectedDocTypes(data.documentTypes);
+                $scope.docTypes.forEach(function(docType) {
                     $scope.ids.push(docType.id);
                     $scope.names.push(docType.name);
                 });
-                $scope.matrix = $scope.buildMatrix();
+                $scope.filteredDocTypes.forEach(function(docType) {
+                    $scope.filteredIds.push(docType.id);
+                    $scope.filteredNames.push(docType.name);
+                })
+                $scope.matrix = $scope.buildMatrix(false);
+                $scope.filteredMatrix = $scope.buildMatrix(true);
             }
+            console.info($scope.ids);
+            console.info($scope.filteredIds);
             $scope.createGraph();
         });
     };
@@ -25,7 +33,12 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
         $scope.docTypes = [];
         $scope.ids = [];
         $scope.matrix = [];
+        $scope.filteredDocTypes = [];
+        $scope.filteredIds = [];
+        $scope.filteredMatrix = [];
         $scope.names = [];
+        $scope.filteredNames = [];
+        $scope.showAll = true;
         $scope.svg = false;
     };
 
@@ -41,12 +54,22 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
         };
     };
 
+    $scope.toggleShowAll = function() {
+        $scope.deleteGraph();
+        $scope.createGraph();
+    }
+
     /*--- Helper Functions ---*/
 
-    $scope.buildMatrix = function() {
-        var docTypes = $scope.docTypes,
-        ids = $scope.ids,
-        names = $scope.names,
+    $scope.buildMatrix = function(isFiltered) {
+        var docTypes = $scope.docTypes;
+        var ids = $scope.ids;
+        var names = $scope.names;
+        if (isFiltered) {
+            docTypes = $scope.filteredDocTypes;
+            ids = $scope.filteredIds;
+            names = $scope.filteredNames;
+        }
         matrix = [];
         if (docTypes && docTypes.length > 0) {
             docTypes.forEach(function(docType) {
@@ -81,10 +104,15 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
     $scope.createGraph = function() {
         var fill = d3.scale.category10();
         var data = {
-            labels: $scope.names,
-            matrix: $scope.matrix
+            labels: $scope.filteredNames,
+            matrix: $scope.filteredMatrix
         };
-
+        if ($scope.showAll) {
+            data = {
+                labels: $scope.names,
+                matrix: $scope.matrix
+            };
+        }
         // Visualize
         var chord = d3.layout.chord()
             .padding(.05)
@@ -104,7 +132,7 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             .attr("transform", "translate(" + (width + 200) / 2 + "," + (height + 200) / 2 + ")");
 
         $scope.svg.append("g").selectAll("path").data(chord.groups).enter().append("path").attr("class", "arc").style("fill", function(d) {
-            return d.index < 4 ? '#444444' : fill(d.index);
+            return '#f57020';//d.index < 4 ? '#444444' : fill(d.index);
         }).attr("d", d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius)).on("mouseover", $scope.fade(.1)).on("mouseout", $scope.fade(.7));
 
         $scope.svg.append("g")
@@ -129,6 +157,11 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             .text(function(d) {
                 return data.labels[d.index];
             });
+    };
+
+    $scope.deleteGraph = function() {
+        $scope.svg = false;
+        $('.doctype-graph').html('');
     };
 
     $scope.doesDocTypeHaveConnection = function(docTypes, id) {
