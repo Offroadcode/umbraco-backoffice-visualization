@@ -1,10 +1,148 @@
-angular.module("umbraco")
-    .controller("DocTypeVisualiser.Controller",
-    function ($scope, $http, notificationsService) {
+angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($scope, $http, notificationsService, doctypeApiResource, d3Resource) {
 
-        $http.get('/umbraco/backoffice/api/DocTypeVisualiser/GetViewModel').
-            success(function (data, status, headers, config) {
+    /*--- Init functions ---*/
+
+    $scope.init = function() {
+        console.info('Controller initialized');
+        $scope.setVariables();
+        $scope.getData();
+    };
+
+    $scope.getData = function() {
+        doctypeApiResource.getViewModel().then(function (data) {
+            console.info(data);
+            if (data.documentTypes.length) {
+                $scope.docTypes = data.documentTypes;
+                $scope.docTypes.forEach(function(docType) {
+                    $scope.ids.push(docType.id);
+                    $scope.names.push(docType.name);
+                });
+                console.info('IDs', $scope.ids, $scope.names);
+                $scope.matrix = $scope.buildMatrix();
+            }
+            $scope.createGraph();
+        });
+    };
+
+    $scope.setVariables = function() {
+        $scope.docTypes = [];
+        $scope.ids = [];
+        $scope.matrix = [];
+        $scope.names = [];
+    };
+
+    /*--- Event Handlers ---*/
+
+    /*--- Helper Functions ---*/
+
+    $scope.buildMatrix = function() {
+        var docTypes = $scope.docTypes,
+        ids = $scope.ids,
+        names = $scope.names,
+        matrix = [];
+        if (docTypes && docTypes.length > 0) {
+            docTypes.forEach(function(docType) {
+                var comps = docType.compositions;
+                var matrixRow = [];
+                ids.forEach(function(id) {
+                    var val = 0;
+                    if (comps && comps.length > 0) {
+                        comps.forEach(function(comp) {
+                            if (comp === id) {
+                                val = 1;
+                            }
+                        });
+                    }
+                    matrixRow.push(val);
+                });
+                matrix.push(matrixRow);
+            });
+        }
+        console.info('matrix', matrix);
+        return matrix;
+    };
+
+    $scope.createGraph = function() {
+        var fill = d3.scale.category10();
+        var data = {
+            labels: $scope.names,
+            matrix: $scope.matrix
+        }
+
+        // Visualize
+        var chord = d3.layout.chord()
+            .padding(.05)
+            .sortSubgroups(d3.descending)
+            .matrix(data.matrix);
+
+        var width = 960,
+            height = 500,
+            r1 = height / 2,
+            innerRadius = Math.min(width, height) * .41,
+            outerRadius = innerRadius * 1.1;
+
+        var svg = d3.select("#DocTypeVisualiserPlaceHolder").append("svg")
+            .attr("width", width+200)
+            .attr("height", height+200)
+            .append("g")
+            .attr("transform", "translate(" + (width+200) / 2 + "," + (height+200) / 2 + ")");
+
+        svg.append("g").selectAll("path").data(chord.groups).enter().append("path").attr("class", "arc").style("fill", function(d) {
+            return d.index < 4 ? '#444444' : fill(d.index);
+        }).attr("d", d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius)).on("mouseover", fade(.1)).on("mouseout", fade(.7));
+
+            svg.append("g")
+                .attr("class", "chord")
+                .selectAll("path")
+                .data(chord.chords)
+                .enter().append("path")
+                .attr("d", d3.svg.chord().radius(innerRadius))
+                .style("fill", function(d) { return fill(d.target.index); })
+                .style("opacity", 0.7);
+
+            svg.append("g").selectAll(".arc")
+                .data(chord.groups)
+                .enter().append("svg:text")
+                .attr("dy", ".35em")
+                .attr("text-anchor", function(d) { return ((d.startAngle + d.endAngle) / 2) > Math.PI ? "end" : null; })
+                .attr("transform", function(d) {
+                  return "rotate(" + (((d.startAngle + d.endAngle) / 2) * 180 / Math.PI - 90) + ")"
+                      + "translate(" + (r1 - 15) + ")"
+                      + (((d.startAngle + d.endAngle) / 2) > Math.PI ? "rotate(180)" : "");
+                })
+                .text(function(d) {
+                    return data.labels[d.index];
+                });
+
+                // Returns an event handler for fading a given chord group.
+                function fade(opacity) {
+                    return function(g, i) {
+                    svg.selectAll(".chord path")
+                        .filter(function(d) { return d.source.index != i && d.target.index != i; })
+                        .transition()
+                        .style("opacity", opacity);
+                    };
+                }
+    };
+
+    /*---- Init ----*/
+    $scope.init();
+
+
+
+
+    /*
+        doctypeApiResource.getViewModel().then(function (data) {
 				console.log( "Success", data );
+                var docTypes = [];
+                var ids = [];
+                if (data.documentTypes.length) {
+                    docTypes = data.documentTypes;
+                    ids = docTypes.map(function(docType) {
+                        return docType.id;
+                    });
+                    console.info('IDs', ids);
+                }
                 $scope.vm = data;
 
 				// Following all taken from http://bl.ocks.org/MoritzStefaner/1377729
@@ -126,8 +264,6 @@ angular.module("umbraco")
 					anchorLink.call(updateLink);
 
 				});
-            }).
-            error(function (data, status, headers, config) {
-				console.log( "Error:", data );
             });
+            */
     });

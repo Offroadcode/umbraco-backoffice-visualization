@@ -48,6 +48,8 @@ module.exports = function(grunt) {
         src: [
             'BackOfficeVisualiser/doctype.visualiser.namespaces.js',
             'BackOfficeVisualiser/models/doctype.visualiser.models.js',
+			'BackOfficeVisualiser/resources/d3.resource.js',
+			'BackOfficeVisualiser/resources/doctype.api.resource.js',
             'BackOfficeVisualiser/controllers/doctype.visualiser.controller.js'
         ],
         dest: '<%= basePath %>/js/backoffice.visualiser.js'

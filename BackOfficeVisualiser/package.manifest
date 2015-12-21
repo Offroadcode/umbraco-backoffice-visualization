@@ -1,9 +1,9 @@
 {
     "javascript" : [
-		"https://d3js.org/d3.v3.min.js",  
-        "/app_plugins/BackOfficeVisualiser/js/backoffice.visualiser.controller.js"
+		"https://d3js.org/d3.v3.min.js",
+        "/app_plugins/BackOfficeVisualiser/js/backoffice.visualiser.js"
     ],
-    "css" : [ 
+    "css" : [
         "/app_plugins/BackOfficeVisualiser/css/visualiser.css"
     ]
 
