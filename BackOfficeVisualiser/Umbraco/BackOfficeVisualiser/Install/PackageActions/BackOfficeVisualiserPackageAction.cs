@@ -15,7 +15,7 @@ namespace BackOfficeVisualiser.Install.PackageActions
 
         public XmlNode SampleXml()
         {
-            string sample = "<Action runat=\"install\" undo=\"true/false\" alias=\"DocTypeVisualiser\"/>";
+            string sample = "<Action runat=\"install\" undo=\"true/false\" alias=\"BackOfficeVisualiser\"/>";
             return umbraco.cms.businesslogic.packager.standardPackageActions.helper.parseStringToXmlNode(sample);
         }
 
