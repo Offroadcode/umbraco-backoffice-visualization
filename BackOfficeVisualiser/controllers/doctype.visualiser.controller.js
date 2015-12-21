@@ -39,7 +39,7 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
                 .transition()
                 .style("opacity", opacity);
         };
-    }
+    };
 
     /*--- Helper Functions ---*/
 
@@ -98,10 +98,10 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             outerRadius = innerRadius * 1.1;
 
         $scope.svg = d3.select("#DocTypeVisualiserPlaceHolder").append("svg")
-            .attr("width", width)
-            .attr("height", height)
+            .attr("width", width + 200)
+            .attr("height", height + 200)
             .append("g")
-            .attr("transform", "translate(" + (width) / 2 + "," + (height) / 2 + ")");
+            .attr("transform", "translate(" + (width + 200) / 2 + "," + (height + 200) / 2 + ")");
 
         $scope.svg.append("g").selectAll("path").data(chord.groups).enter().append("path").attr("class", "arc").style("fill", function(d) {
             return d.index < 4 ? '#444444' : fill(d.index);
