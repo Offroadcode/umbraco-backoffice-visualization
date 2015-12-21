@@ -83,7 +83,7 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
         var data = {
             labels: $scope.names,
             matrix: $scope.matrix
-        }
+        };
 
         // Visualize
         var chord = d3.layout.chord()
@@ -91,17 +91,17 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             .sortSubgroups(d3.descending)
             .matrix(data.matrix);
 
-        var width = 960,
-            height = 500,
+        var width = parseInt(d3.select("#DocTypeVisualiserPlaceHolder").style("width"), 10),
+            height = parseInt(d3.select("#DocTypeVisualiserPlaceHolder").style("height"), 10),
             r1 = height / 2,
             innerRadius = Math.min(width, height) * .41,
             outerRadius = innerRadius * 1.1;
 
         $scope.svg = d3.select("#DocTypeVisualiserPlaceHolder").append("svg")
-            .attr("width", width+200)
-            .attr("height", height+200)
+            .attr("width", width)
+            .attr("height", height)
             .append("g")
-            .attr("transform", "translate(" + (width+200) / 2 + "," + (height+200) / 2 + ")");
+            .attr("transform", "translate(" + (width) / 2 + "," + (height) / 2 + ")");
 
         $scope.svg.append("g").selectAll("path").data(chord.groups).enter().append("path").attr("class", "arc").style("fill", function(d) {
             return d.index < 4 ? '#444444' : fill(d.index);
