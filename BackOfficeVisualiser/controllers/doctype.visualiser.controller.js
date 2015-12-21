@@ -10,9 +10,9 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
     $scope.getData = function() {
         doctypeApiResource.getViewModel().then(function (data) {
             if (data.documentTypes.length) {
-                $scope.sortedDocs = $scope.sortByCompositions(data.documentTypes);
-                $scope.docTypes = $scope.sortedDocs;
-                $scope.filteredDocTypes = $scope.filterUnconnectedDocTypes($scope.sortedDocs);
+                var sortedDocs = $scope.sortByCompositions(data.documentTypes);
+                $scope.docTypes = sortedDocs;
+                $scope.filteredDocTypes = $scope.filterUnconnectedDocTypes(sortedDocs);
                 $scope.docTypes.forEach(function(docType) {
                     $scope.ids.push(docType.id);
                     $scope.names.push(docType.name);
@@ -24,6 +24,8 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
                 $scope.matrix = $scope.buildMatrix(false);
                 $scope.filteredMatrix = $scope.buildMatrix(true);
             }
+            console.info($scope.filteredMatrix);
+            console.info($scope.filteredDocTypes);
             $scope.createGraph();
         });
     };
@@ -62,38 +64,39 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
 
     $scope.buildMatrix = function(isFiltered) {
         var docTypes = $scope.docTypes;
-        var ids = $scope.ids;
-        var names = $scope.names;
         if (isFiltered) {
             docTypes = $scope.filteredDocTypes;
-            ids = $scope.filteredIds;
-            names = $scope.filteredNames;
         }
         matrix = [];
         if (docTypes && docTypes.length > 0) {
+            // Loop through each docType
             docTypes.forEach(function(docType) {
-                var comps = docType.compositions;
                 var matrixRow = [];
-                ids.forEach(function(id) {
+                var currentComps = docType.comps;
+                var currentId = docType.id;
+                // Loop through each docType to compare against this one.
+                docTypes.forEach(function(otherDocType) {
                     var val = 0;
-                    // First, check if any of the docType's comps match a given id.
-                    if (comps && comps.length > 0) {
-                        comps.forEach(function(comp) {
-                            if (comp === id) {
+                    // If other doctype's ID matches one of the compositions for this doctype,then val = 1.
+                    if (currentComps && currentComps.length > 0) {
+                        currentComps.forEach(function(cc) {
+                            if (cc == otherDocType.id) {
                                 val = 1;
                             }
                         });
                     }
-                    // Second, check if the docType at the given id has a comp that matches this docType.
-                    docTypes.forEach(function(dt) {
-                        dt.compositions.forEach(function(dtc) {
-                            if (dtc === docType.id) {
+                    // Alternatively, if this document's id is a compositionin the other doctype, then val = 1.
+                    if (otherDocType.compositions && otherDocType.compositions.length > 0) {
+                        otherDocType.compositions.forEach(function(odcc) {
+                            if (odcc == currentId) {
                                 val = 1;
                             }
                         });
-                    });
+                    }
+                    // Push the val to the row
                     matrixRow.push(val);
                 });
+                // For each doctype, push a row to the matrix.
                 matrix.push(matrixRow);
             });
         }
@@ -131,16 +134,17 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             .attr("transform", "translate(" + (width + 200) / 2 + "," + (height + 200) / 2 + ")");
 
         $scope.svg.append("g").selectAll("path").data(chord.groups).enter().append("path").attr("class", "arc").style("fill", function(d) {
-            return d.index < 4 ? '#444444' : fill(d.index);
-        }).attr("d", d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius)).on("mouseover", $scope.fade(.1)).on("mouseout", $scope.fade(.7));
+            return fill(d.index);
+        }).style("stroke", function(d) { return fill(d.index); }).attr('stroke-width', 4).attr("d", d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius)).on("mouseover", $scope.fade(.1)).on("mouseout", $scope.fade(.7));
 
         $scope.svg.append("g")
             .attr("class", "chord")
             .selectAll("path")
             .data(chord.chords)
             .enter().append("path")
-            .attr("d", d3.svg.chord().radius(innerRadius))
+            .attr("d", d3.svg.chord().radius(innerRadius - 2))
             .style("fill", function(d) { return fill(d.target.index); })
+            .style("stroke", function(d) { return fill(d.target.index); })
             .style("opacity", 0.7);
 
         $scope.svg.append("g").selectAll(".arc")
