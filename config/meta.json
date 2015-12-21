@@ -1,0 +1,9 @@
+{
+	"name": "BackOfficeVisualiser",
+	"version": "1.0.0",
+	"url": "http://github.com/Offroadcode/umbraco-backoffice-visualisation",
+	"author": "Offroadcode",
+	"authorUrl": "http://offroadcode.com/",
+	"license": "MIT",
+	"licenseUrl": "http://opensource.org/licenses/MIT"
+}
