@@ -24,9 +24,8 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
                 $scope.matrix = $scope.buildMatrix(false);
                 $scope.filteredMatrix = $scope.buildMatrix(true);
             }
-            console.info($scope.filteredMatrix);
-            console.info($scope.filteredDocTypes);
             $scope.createGraph();
+            $scope.listenForTabClick();
         });
     };
 
@@ -58,7 +57,7 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
     $scope.toggleShowAll = function() {
         $scope.deleteGraph();
         $scope.createGraph();
-    }
+    };
 
     /*--- Helper Functions ---*/
 
@@ -198,6 +197,24 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             });
         }
         return filtered;
+    };
+
+    $scope.listenForTabClick = function() {
+        var tabs = document.querySelectorAll('.nav-tabs a.ng-binding');
+        if (tabs && tabs.length > 0) {
+            for(var i = 0; i < tabs.length; i++) {
+                tabs[i].onclick = function() {
+                    if ($('#DocTypeVisualiserPlaceHolder > svg').attr('height') < 101) {
+                        window.setTimeout(function() {
+                            $scope.toggleShowAll();
+                        }, 5);
+                    }
+                };
+            }
+        }
+        window.onresize = function() {
+            $scope.toggleShowAll();
+        };
     };
 
     $scope.sortByCompositions = function(docTypes) {
