@@ -17,6 +17,12 @@
 		border-top: solid 1px $grey;
 	}
 
+    &--item {
+        a {
+            cursor: pointer;
+        }
+    }
+
     &--table {
         tr {
             td {

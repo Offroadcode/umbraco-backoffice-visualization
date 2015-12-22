@@ -1,5 +1,16 @@
 # Umbraco Backoffice Visualization Package
-An Umbraco package that visualizes data for the back office such as DocTypes.
+
+The Umbraco Backoffice Visualization package is a dashboard that displays visual representations of how data in Umbraco intersects. Located in the Settings section, version 1 has the purpose of mapping DocType connections via inheritance and compositions.
+
+<img src="https://docs.google.com/uc?id=0B1BeRPYxbA_SeE1lNGYtSkszTEk&export=download" width="285" title="DocType Composition Relationships Landing" />
+<img src="https://docs.google.com/uc?id=0B1BeRPYxbA_SZDVVZ1oweW55WDg&export=download" width="285" title="DocType Composition Relationships Table" />
+<img src="https://docs.google.com/uc?id=0B1BeRPYxbA_SRmV6SjNJQlpFTGc&export=download" width="285" title="DocType Compostion Relationships, Showing All DocTypes" />
+
+#### Change Log
+
+##### 1.0.0
+
+* Initial Release
 
 ## Download for Umbraco
 
