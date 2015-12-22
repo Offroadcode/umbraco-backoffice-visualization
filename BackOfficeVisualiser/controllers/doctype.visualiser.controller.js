@@ -9,6 +9,7 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
 
     $scope.getData = function() {
         doctypeApiResource.getViewModel().then(function (data) {
+            console.info(data);
             if (data.documentTypes.length) {
                 var sortedDocs = $scope.sortByCompositions(data.documentTypes);
                 $scope.docTypes = sortedDocs;
