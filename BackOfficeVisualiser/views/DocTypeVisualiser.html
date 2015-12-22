@@ -1,9 +1,22 @@
-<div class="row" ng-controller="DocTypeVisualiser.Controller">
+<div class="row doctype-graph--wrapper" ng-controller="DocTypeVisualiser.Controller">
 	<h3>DocType Composition Relationships</h3>
-	<div>
-		<label>
-			<input type="checkbox" ng-model="showAll" ng-change="toggleShowAll()"> Show doctypes without compositions
-		</label>
+	<div class="span3">
+		<div>
+			<!-- TODO: Kyle, this section should swap out with the click effects  -->
+			<div class="doctype-graph--welcome">
+				<p>This <a href="https://en.wikipedia.org/wiki/Chord_diagram" target="_blank">chord diagram</a> displays the relationships between Document Types, inherited Document Types, and DocType Compositions. Hovering over an item will display the other Document Types it is connected to, and clicking on one displays more in-depth text information about inheritance and related compositions or non-composition Document Types.</p>
+			</div>
+			<div class="doctype-graph--item">
+			</div>
+			<div class="doctype-graph--settings">
+				<h4>Settings</h4>
+				<label>
+					<input type="checkbox" ng-model="showAll" ng-change="toggleShowAll()"> Show doctypes without compositions
+				</label>
+			</div>
+		</div>
 	</div>
-	<div id="DocTypeVisualiserPlaceHolder" class="doctype-graph"></div>
+	<div class="span9">
+		<div id="DocTypeVisualiserPlaceHolder" class="doctype-graph"></div>
+	</div>
 </div>
