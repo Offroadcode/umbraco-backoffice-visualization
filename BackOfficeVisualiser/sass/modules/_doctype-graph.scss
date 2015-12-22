@@ -1,0 +1,35 @@
+// Doctype Graph Module
+.doctype-graph {
+	min-height: 660px;
+	height: calc(100% - 80px);
+	width: 	calc(100% - 80px);
+    padding: 20px;
+    margin: 0 0 40px 40px;
+    background: $lightgrey;
+    border: solid 1px $grey;
+	text {
+		font-size: 10px;
+	}
+
+	&--settings {
+		margin-top: 2em;
+		padding-top: 1em;
+		border-top: solid 1px $grey;
+	}
+
+    &--table {
+        tr {
+            td {
+                &:nth-child(2) {
+                    min-width: 200px;
+                }
+                &:nth-child(3) {
+                    min-width: 150px;
+                }
+                &:nth-child(4) {
+                    width: 72px;
+                }
+            }
+        }
+    }
+}

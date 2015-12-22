@@ -1,22 +1,67 @@
-<div class="row doctype-graph--wrapper" ng-controller="DocTypeVisualiser.Controller">
+<div class="doctype-graph--wrapper" ng-controller="DocTypeVisualiser.Controller">
 	<h3>DocType Composition Relationships</h3>
-	<div class="span3">
-		<div>
-			<!-- TODO: Kyle, this section should swap out with the click effects  -->
-			<div class="doctype-graph--welcome">
-				<p>This <a href="https://en.wikipedia.org/wiki/Chord_diagram" target="_blank">chord diagram</a> displays the relationships between Document Types, inherited Document Types, and DocType Compositions. Hovering over an item will display the other Document Types it is connected to, and clicking on one displays more in-depth text information about inheritance and related compositions or non-composition Document Types.</p>
-			</div>
-			<div class="doctype-graph--item">
-			</div>
-			<div class="doctype-graph--settings">
-				<h4>Settings</h4>
-				<label>
-					<input type="checkbox" ng-model="showAll" ng-change="toggleShowAll()"> Show doctypes without compositions
-				</label>
+	<div class="row">
+		<div class="span3">
+			<div>
+				<!-- TODO: Kyle, this section should swap out with the click effects  -->
+				<div class="doctype-graph--welcome">
+					<p>This <a href="https://en.wikipedia.org/wiki/Chord_diagram" target="_blank">chord diagram</a> displays the relationships between Document Types, inherited Document Types, and DocType Compositions. Hovering over an item will display the other Document Types it is connected to, and clicking on one displays more in-depth text information about inheritance and related compositions or non-composition Document Types.</p>
+				</div>
+				<div class="doctype-graph--item">
+				</div>
+				<div class="doctype-graph--settings">
+					<h4>Settings</h4>
+					<label>
+						<input type="checkbox" ng-model="showAll" ng-change="toggleShowAll()"> Show doctypes without compositions
+					</label>
+				</div>
 			</div>
 		</div>
+		<div class="span9">
+			<div id="DocTypeVisualiserPlaceHolder" class="doctype-graph"></div>
+		</div>
 	</div>
-	<div class="span9">
-		<div id="DocTypeVisualiserPlaceHolder" class="doctype-graph"></div>
-	</div>
+	<table class="table table-hover doctype-graph--table">
+		<thead>
+			<tr>
+				<th>Hide</th>
+				<!-- TODO: The icon classes should switch between 'icon-navigation-up' and 'icon-navigation-down' depending on how the sorting is being done. My thought is they should all default up and switch to down? -->
+				<th>Name <i class="icon-navigation-up"></i></th>
+				<th>Inheritance <i class="icon-navigation-down"></i></th>
+				<th>Is Comp <i class="icon-navigation-down"></i></th>
+				<th>Compositions/Associated DocTypes</th>
+				<th>ID <i class="icon-navigation-down"></i></th>
+			</tr>
+		</thead>
+		<tbody>
+			<!-- TODO: Hovering over a row should hover over the item in the graph and vice-versa -->
+			<tr>
+				<td><input type="checkbox" /></td>
+				<td>Base Page</td>
+				<td></td>
+				<td>Yes</td>
+				<!-- TODO: Ideally, I would like all of these to be links and if you click on them, it will take you to the DocType to edit it -->
+				<td>Solutions Landing, Secured Landing, Benefits Listing, About Page, Library Listing, Award Listing, Testimonials Listing, Text Page, Management Team Listing, FAQ Listing, Team Listing, Team Member, Careers Landing, Contact Page, Home Page, Locations Listing, Asset Tracker Page, Library Report, Library Document, Benefit</td>
+				<td>1046</td>
+			</tr>
+			<tr>
+				<td><input type="checkbox" /></td>
+				<td>[Component] Security</td>
+				<td></td>
+				<td>Yes</td>
+				<td>Secured Landing, Library Listing, Asset Tracker Page</td>
+				<td>1102</td>
+			</tr>
+			<tr>
+				<td><input type="checkbox" /></td>
+				<td>Secured Landing</td>
+				<!-- TODO: Ideally, I would like all of these to be links and if you click on them, it will take you to the DocType to edit it -->
+				<td>Base Page &raquo; Text Page</td>
+				<td>No</td>
+				<!-- TODO: Ideally, I would like all of these to be links and if you click on them, it will take you to the DocType to edit it -->
+				<td>[Component] Intro, [Component] Content, Base Page, [Component] Security, [Component] Headline, [Component] Banner</td>
+				<td>1203</td>
+			</tr>
+		</tbody>
+	</table>
 </div>

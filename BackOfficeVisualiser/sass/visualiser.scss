@@ -1,9 +1,6 @@
-.doctype-graph {
-	margin: 0 auto;
-	min-height: 700px;
-	height: 100%;
-	width: 	100%;
-	text {
-		font-size: 10px;
-	}
-}
+@import
+
+	"global/settings",
+
+	"modules/doctype-graph"
+	;
