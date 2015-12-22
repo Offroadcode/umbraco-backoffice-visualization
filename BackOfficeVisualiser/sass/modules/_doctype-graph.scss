@@ -2,7 +2,8 @@
 .doctype-graph {
 	min-height: 660px;
 	height: calc(100% - 80px);
-	width: 	calc(100% - 80px);
+	width: 	calc(100% - 82px);
+    overflow: hidden;
     padding: 20px;
     margin: 0 0 40px 40px;
     background: $lightgrey;

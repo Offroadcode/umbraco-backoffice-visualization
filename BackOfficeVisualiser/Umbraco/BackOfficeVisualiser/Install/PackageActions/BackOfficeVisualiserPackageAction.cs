@@ -22,8 +22,8 @@ namespace BackOfficeVisualiser.Install.PackageActions
         public bool Execute(string packageName, XmlNode xmlData)
         {
             //If not there, add the dashboards to dashboard.config
-
-            this.AddSectionDashboard("BackOfficeVisualiser", "settings", "Umbraco Data", "/app_plugins/BackOfficeVisualiser/views/DocTypeVisualiser.html");
+             
+            this.AddSectionDashboard("BackOfficeVisualiser", "settings", "Back Office Visualizer", "/app_plugins/BackOfficeVisualiser/views/DocTypeVisualiser.html");
 
             return true;
         }
