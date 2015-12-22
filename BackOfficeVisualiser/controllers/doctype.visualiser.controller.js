@@ -9,7 +9,6 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
 
     $scope.getData = function() {
         doctypeApiResource.getViewModel().then(function (data) {
-            console.info(data);
             if (data.documentTypes.length) {
                 var sortedDocs = $scope.sortByCompositions(data.documentTypes);
                 $scope.docTypes = sortedDocs;
@@ -28,6 +27,7 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
         $scope.matrix = [];
         $scope.names = [];
         $scope.selectedDocType = {
+            id: -1,
             name: '',
             breadcrumb: [],
             compositions: []
@@ -39,29 +39,52 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
     /*--- Event Handlers ---*/
 
     // Returns an event handler for fading a given chord group.
-    $scope.fade = function (opacity) {
+    $scope.fade = function () {
         return function(g, i) {
+            var si = $scope.getIndexByDocTypeId($scope.selectedDocType.id);
+            $scope.svg.selectAll(".chord path").filter(function(d) { return d.source.index == i || d.target.index == si; }).transition().style("opacity", 0.7);
             $scope.svg.selectAll(".chord path")
-                .filter(function(d) { return d.source.index != i && d.target.index != i; })
+                .filter(function(d) { return d.source.index != i && d.target.index != i && d.source.index != si && d.target.index != si; })
                 .transition()
-                .style("opacity", opacity);
+                .style("opacity", 0.1);
         };
     };
 
-    $scope.selectDocType = function() {
-        return function(g, index) {
+    $scope.selectDocType = function(id) {
+        if (!id) {
+            return function(g, index) {
+                var docTypes = $scope.docTypes;
+                if (!$scope.showAll) {
+                    docTypes = $scope.filterUnconnectedDocTypes($scope.docTypes);
+                }
+                var selected = docTypes[index];
+                $scope.selectedDocType = {
+                    id: selected.id,
+                    name: selected.name,
+                    breadcrumb: $scope.getBreadcrumb(selected.id),
+                    compositions: $scope.getCompositions(selected.id),
+                    pagesUsingComp: $scope.getPagesUsingComp(selected.id)
+                };
+                $scope.svg.selectAll(".chord path").style("opacity", 0.1);
+                $scope.svg.selectAll(".chord path").filter(function(d) { return d.source.index == index || d.target.index == index; }).style("opacity", 0.7);
+            }
+        } else {
+            var selected = $scope.getDocTypeById(id);
+            var index = $scope.getIndexByDocTypeId(id);
+            $scope.selectedDocType = {
+                id: selected.id,
+                name: selected.name,
+                breadcrumb: $scope.getBreadcrumb(selected.id),
+                compositions: $scope.getCompositions(selected.id),
+                pagesUsingComp: $scope.getPagesUsingComp(selected.id)
+            };
             var docTypes = $scope.docTypes;
             if (!$scope.showAll) {
                 docTypes = $scope.filterUnconnectedDocTypes($scope.docTypes);
             }
-            var selected = docTypes[index];
-            console.info(selected);
-            $scope.selectedDocType = {
-                name: selected.name,
-                breadcrumb: [],
-                compositions: []
-            };
-        };
+            $scope.svg.selectAll(".chord path").style("opacity", 0.1);
+            $scope.svg.selectAll(".chord path").filter(function(d) { return d.source.index == index || d.target.index == index; }).style("opacity", 0.7);
+        }
     };
 
     $scope.toggleShowAll = function() {
@@ -123,9 +146,8 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             .padding(.05)
             .sortSubgroups(d3.descending)
             .matrix(data.matrix);
-
-        var width = parseInt(d3.select("#DocTypeVisualiserPlaceHolder").style("width"), 10) - 200,
-            height = parseInt(d3.select("#DocTypeVisualiserPlaceHolder").style("height"), 10) - 200,
+        var width = document.querySelector('#DocTypeVisualiserPlaceHolder').offsetWidth - 200,
+            height = document.querySelector('#DocTypeVisualiserPlaceHolder').offsetHeight - 200,
             r1 = height / 2,
             innerRadius = Math.min(width, height) * .41,
             outerRadius = innerRadius * 1.1;
@@ -149,8 +171,7 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             .attr('stroke-width', 4)
             .attr("d", d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius))
             .on("click", $scope.selectDocType())
-            .on("mouseover", $scope.fade(.1))
-            .on("mouseout", $scope.fade(.7));
+            .on("mouseover", $scope.fade());
 
         $scope.svg.append("g")
             .attr("class", "chord")
@@ -215,6 +236,61 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
         return filtered;
     };
 
+    $scope.getBreadcrumb = function(id) {
+        var breadcrumb = [];
+        var docType = $scope.getDocTypeById(id);
+        var hasCrumb = true;
+        if (id) {
+            while (hasCrumb) {
+                hasCrumb = (docType.parentId > -1) ? true : false;
+                if (hasCrumb) {
+                    docType =  $scope.getDocTypeById(docType.parentId);
+                    var crumb = {
+                        name: docType.name,
+                        id: docType.id
+                    };
+                    breadcrumb.push(crumb);
+                }
+            }
+        }
+        return breadcrumb;
+    };
+
+    $scope.getCompositions = function(id) {
+        var compositions = [];
+        var docType = $scope.getDocTypeById(id);
+        if (docType.compositions && docType.compositions.length > 0) {
+            compositions = docType.compositions.map(function(comp) {
+                return $scope.getDocTypeById(comp);
+            });
+        }
+        return compositions;
+    };
+
+    $scope.getDocTypeById = function(id) {
+        var result = false;
+        $scope.docTypes.forEach(function(docType) {
+            if (docType.id === id) {
+                result = docType;
+            }
+        });
+        return result;
+    };
+
+    $scope.getIndexByDocTypeId = function(id) {
+        var index = -1;
+        var docTypes = $scope.docTypes;
+        if (!$scope.showAll) {
+            docTypes = $scope.filterUnconnectedDocTypes($scope.docTypes);
+        }
+        docTypes.forEach(function(dt, i) {
+            if (dt.id === id) {
+                index = i;
+            }
+        });
+        return index;
+    }
+
     $scope.getMatrix = function() {
         var matrix = $scope.matrix;
         if (!$scope.showAll) {
@@ -231,6 +307,22 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             });
         }
         return names;
+    };
+
+    $scope.getPagesUsingComp = function(id) {
+        var pages = [];
+        if (id) {
+            $scope.docTypes.forEach(function(dt) {
+                if (dt.compositions && dt.compositions.length > 0) {
+                    dt.compositions.forEach(function(comp) {
+                        if (comp === id) {
+                            pages.push(dt);
+                        }
+                    })
+                }
+            });
+        }
+        return pages;
     };
 
     $scope.listenForTabClick = function() {

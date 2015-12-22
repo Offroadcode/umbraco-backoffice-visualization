@@ -3,11 +3,34 @@
 	<div class="row">
 		<div class="span3">
 			<div>
-				<!-- TODO: Kyle, this section should swap out with the click effects  -->
-				<div class="doctype-graph--welcome">
+				<div class="doctype-graph--welcome" ng-show="selectedDocType.name == ''">
 					<p>This <a href="https://en.wikipedia.org/wiki/Chord_diagram" target="_blank">chord diagram</a> displays the relationships between Document Types, inherited Document Types, and DocType Compositions. Hovering over an item will display the other Document Types it is connected to, and clicking on one displays more in-depth text information about inheritance and related compositions or non-composition Document Types.</p>
 				</div>
-				<div class="doctype-graph--item">
+				<div class="doctype-graph--item" ng-show="selectedDocType.name != ''">
+					<h4>DocType Name: <a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{selectedDocType.id}}">{{selectedDocType.name}}</a></h4>
+					<div class="inheritance" ng-show="selectedDocType.breadcrumb.length > 0">
+						Inheritance:
+						<span ng-repeat="crumb in selectedDocType.breadcrumb track by $index">
+							<span ng-show="$index > 0"> > </span>
+							<a ng-click="selectDocType(crumb.id)">{{crumb.name}}</a> <a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{crumb.id}}"><i class="icon-edit"></i></a>
+						</span>
+					</div>
+					<div class="compositions" ng-show="selectedDocType.compositions.length > 0">
+						Compositions:
+						<ul>
+							<li ng-repeat="comp in selectedDocType.compositions track by $index">
+								<a ng-click="selectDocType(comp.id)">{{comp.name}}</a> <a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{comp.id}}"><i class="icon-edit"></i></a>
+							</li>
+						</ul>
+					</div>
+					<div class="pages-by-composition" ng-show="selectedDocType.pagesUsingComp.length > 0">
+						Pages using this composition:
+						<ul>
+							<li ng-repeat="comp in selectedDocType.pagesUsingComp track by $index">
+								<a ng-click="selectDocType(comp.id)">{{comp.name}}</a> <a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{comp.id}}"><i class="icon-edit"></i></a>
+							</li>
+						</ul>
+					</div>
 				</div>
 				<div class="doctype-graph--settings">
 					<h4>Settings</h4>
