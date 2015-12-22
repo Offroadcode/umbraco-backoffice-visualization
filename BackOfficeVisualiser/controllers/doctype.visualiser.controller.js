@@ -13,17 +13,10 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             if (data.documentTypes.length) {
                 var sortedDocs = $scope.sortByCompositions(data.documentTypes);
                 $scope.docTypes = sortedDocs;
-                $scope.filteredDocTypes = $scope.filterUnconnectedDocTypes(sortedDocs);
                 $scope.docTypes.forEach(function(docType) {
-                    $scope.ids.push(docType.id);
                     $scope.names.push(docType.name);
                 });
-                $scope.filteredDocTypes.forEach(function(docType) {
-                    $scope.filteredIds.push(docType.id);
-                    $scope.filteredNames.push(docType.name);
-                })
                 $scope.matrix = $scope.buildMatrix(false);
-                $scope.filteredMatrix = $scope.buildMatrix(true);
             }
             $scope.createGraph();
             $scope.listenForTabClick();
@@ -32,13 +25,13 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
 
     $scope.setVariables = function() {
         $scope.docTypes = [];
-        $scope.ids = [];
         $scope.matrix = [];
-        $scope.filteredDocTypes = [];
-        $scope.filteredIds = [];
-        $scope.filteredMatrix = [];
         $scope.names = [];
-        $scope.filteredNames = [];
+        $scope.selectedDocType = {
+            name: '',
+            breadcrumb: [],
+            compositions: []
+        };
         $scope.showAll = false;
         $scope.svg = false;
     };
@@ -55,6 +48,22 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
         };
     };
 
+    $scope.selectDocType = function() {
+        return function(g, index) {
+            var docTypes = $scope.docTypes;
+            if (!$scope.showAll) {
+                docTypes = $scope.filterUnconnectedDocTypes($scope.docTypes);
+            }
+            var selected = docTypes[index];
+            console.info(selected);
+            $scope.selectedDocType = {
+                name: selected.name,
+                breadcrumb: [],
+                compositions: []
+            };
+        };
+    };
+
     $scope.toggleShowAll = function() {
         $scope.deleteGraph();
         $scope.createGraph();
@@ -65,7 +74,7 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
     $scope.buildMatrix = function(isFiltered) {
         var docTypes = $scope.docTypes;
         if (isFiltered) {
-            docTypes = $scope.filteredDocTypes;
+            docTypes = $scope.filterUnconnectedDocTypes($scope.docTypes);
         }
         matrix = [];
         if (docTypes && docTypes.length > 0) {
@@ -106,15 +115,9 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
     $scope.createGraph = function() {
         var fill = d3.scale.category10();
         var data = {
-            labels: $scope.filteredNames,
-            matrix: $scope.filteredMatrix
+            labels: $scope.getNames(),
+            matrix: $scope.getMatrix()
         };
-        if ($scope.showAll) {
-            data = {
-                labels: $scope.names,
-                matrix: $scope.matrix
-            };
-        }
         // Visualize
         var chord = d3.layout.chord()
             .padding(.05)
@@ -133,9 +136,21 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             .append("g")
             .attr("transform", "translate(" + (width + 200) / 2 + "," + (height + 200) / 2 + ")");
 
-        $scope.svg.append("g").selectAll("path").data(chord.groups).enter().append("path").attr("class", "arc").style("fill", function(d) {
-            return fill(d.index);
-        }).style("stroke", function(d) { return fill(d.index); }).attr('stroke-width', 4).attr("d", d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius)).on("mouseover", $scope.fade(.1)).on("mouseout", $scope.fade(.7));
+        $scope.svg.append("g")
+            .selectAll("path")
+            .data(chord.groups).enter().append("path")
+            .attr("class", "arc")
+            .style("fill", function(d) {
+                return fill(d.index);
+            })
+            .style("stroke", function(d) {
+                return fill(d.index);
+            })
+            .attr('stroke-width', 4)
+            .attr("d", d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius))
+            .on("click", $scope.selectDocType())
+            .on("mouseover", $scope.fade(.1))
+            .on("mouseout", $scope.fade(.7));
 
         $scope.svg.append("g")
             .attr("class", "chord")
@@ -198,6 +213,24 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             });
         }
         return filtered;
+    };
+
+    $scope.getMatrix = function() {
+        var matrix = $scope.matrix;
+        if (!$scope.showAll) {
+            matrix = $scope.buildMatrix(true);
+        }
+        return matrix;
+    };
+
+    $scope.getNames = function() {
+        var names = $scope.names;
+        if (!$scope.showAll) {
+            names = $scope.filterUnconnectedDocTypes($scope.docTypes).map(function(docType) {
+                return docType.name;
+            });
+        }
+        return names;
     };
 
     $scope.listenForTabClick = function() {
