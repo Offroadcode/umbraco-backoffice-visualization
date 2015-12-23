@@ -42,7 +42,7 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
     $scope.fade = function () {
         return function(g, i) {
             var si = $scope.getIndexByDocTypeId($scope.selectedDocType.id);
-            $scope.svg.selectAll(".chord path").filter(function(d) { return d.source.index == i || d.target.index == si; }).transition().style("opacity", 0.7);
+            $scope.svg.selectAll(".chord path").filter(function(d) { return d.source.index == i || d.target.index == i; }).transition().style("opacity", 0.7);
             $scope.svg.selectAll(".chord path")
                 .filter(function(d) { return d.source.index != i && d.target.index != i && d.source.index != si && d.target.index != si; })
                 .transition()
@@ -53,10 +53,7 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
     $scope.selectDocType = function(id) {
         if (!id) {
             return function(g, index) {
-                var docTypes = $scope.docTypes;
-                if (!$scope.showAll) {
-                    docTypes = $scope.filterUnconnectedDocTypes($scope.docTypes);
-                }
+                var docTypes = $scope.getDocTypes();
                 var selected = docTypes[index];
                 $scope.selectedDocType = {
                     id: selected.id,
@@ -78,10 +75,7 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
                 compositions: $scope.getCompositions(selected.id),
                 pagesUsingComp: $scope.getPagesUsingComp(selected.id)
             };
-            var docTypes = $scope.docTypes;
-            if (!$scope.showAll) {
-                docTypes = $scope.filterUnconnectedDocTypes($scope.docTypes);
-            }
+            var docTypes = $scope.getDocTypes();
             $scope.svg.selectAll(".chord path").style("opacity", 0.1);
             $scope.svg.selectAll(".chord path").filter(function(d) { return d.source.index == index || d.target.index == index; }).style("opacity", 0.7);
         }
@@ -98,6 +92,17 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
         var docTypes = $scope.docTypes;
         if (isFiltered) {
             docTypes = $scope.filterUnconnectedDocTypes($scope.docTypes);
+        }
+        if ($scope.hiddenDocTypes && $scope.hiddenDocTypes.length > 0) {
+            $scope.hiddenDocTypes.forEach(function(hdt, hdi) {
+                if (hdi) {
+                    docTypes.forEach(function(dt, i) {
+                        if (dt.id == hdi) {
+                            docTypes.splice(i, 1);
+                        }
+                    });
+                }
+            });
         }
         matrix = [];
         if (docTypes && docTypes.length > 0) {
@@ -238,18 +243,20 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
 
     $scope.getBreadcrumb = function(id) {
         var breadcrumb = [];
-        var docType = $scope.getDocTypeById(id);
-        var hasCrumb = true;
         if (id) {
-            while (hasCrumb) {
-                hasCrumb = (docType.parentId > -1) ? true : false;
-                if (hasCrumb) {
-                    docType =  $scope.getDocTypeById(docType.parentId);
-                    var crumb = {
-                        name: docType.name,
-                        id: docType.id
-                    };
-                    breadcrumb.push(crumb);
+            var docType = $scope.getDocTypeById(id);
+            if (docType) {
+                var hasCrumb = true;
+                while (hasCrumb) {
+                    hasCrumb = (docType.parentId > -1) ? true : false;
+                    if (hasCrumb) {
+                        docType =  $scope.getDocTypeById(docType.parentId);
+                        var crumb = {
+                            name: docType.name,
+                            id: docType.id
+                        };
+                        breadcrumb.push(crumb);
+                    }
                 }
             }
         }
@@ -267,22 +274,31 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
         return compositions;
     };
 
+    $scope.getDocTypes = function() {
+        var docTypes = $scope.docTypes;
+        if (!$scope.showAll) {
+            docTypes = $scope.filterUnconnectedDocTypes($scope.docTypes);
+        }
+        return docTypes;
+    };
+
     $scope.getDocTypeById = function(id) {
         var result = false;
-        $scope.docTypes.forEach(function(docType) {
-            if (docType.id === id) {
-                result = docType;
+        if (id) {
+            if ($scope.docTypes && $scope.docTypes.length > 0) {
+                $scope.docTypes.forEach(function(docType) {
+                    if (docType.id === id) {
+                        result = docType;
+                    }
+                });
             }
-        });
+        }
         return result;
     };
 
     $scope.getIndexByDocTypeId = function(id) {
         var index = -1;
-        var docTypes = $scope.docTypes;
-        if (!$scope.showAll) {
-            docTypes = $scope.filterUnconnectedDocTypes($scope.docTypes);
-        }
+        var docTypes = $scope.getDocTypes();
         docTypes.forEach(function(dt, i) {
             if (dt.id === id) {
                 index = i;
