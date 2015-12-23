@@ -1,31 +1,34 @@
 angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($scope, $http, notificationsService, doctypeApiResource, d3Resource) {
 
+    /*--- Consts ---*/
+    var ALL_CHORDS = 0;
+    var TARGET_ONLY = 1;
+    var ALL_EXCEPT_TARGETS = 2;
+    var FADED = 0.1;
+    var BRIGHT = 0.7;
+
     /*--- Init functions ---*/
 
     $scope.init = function() {
         $scope.setVariables();
-        $scope.getData();
-    };
-
-    $scope.getData = function() {
-        doctypeApiResource.getViewModel().then(function (data) {
-            if (data.documentTypes.length) {
-                var sortedDocs = $scope.sortByCompositions(data.documentTypes);
-                $scope.docTypes = sortedDocs;
-                $scope.docTypes.forEach(function(docType) {
-                    $scope.names.push(docType.name);
-                });
-                $scope.matrix = $scope.buildMatrix(false);
-            }
+        $scope.getData().then(function(){
             $scope.createGraph();
             $scope.listenForTabClick();
         });
     };
 
+    $scope.getData = function() {
+        return doctypeApiResource.getViewModel().then(function (data) {
+            if (data.documentTypes.length) {
+                var sortedDocs = $scope.sortByCompositions(data.documentTypes);
+                $scope.docTypes = sortedDocs;
+            }
+            return true;
+        });
+    };
+
     $scope.setVariables = function() {
         $scope.docTypes = [];
-        $scope.matrix = [];
-        $scope.names = [];
         $scope.selectedDocType = {
             id: -1,
             name: '',
@@ -39,106 +42,50 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
     /*--- Event Handlers ---*/
 
     // Returns an event handler for fading a given chord group.
-    $scope.fade = function () {
+    $scope.onHoverOverChord = function () {
         return function(g, i) {
             var si = $scope.getIndexByDocTypeId($scope.selectedDocType.id);
-            $scope.svg.selectAll(".chord path").filter(function(d) { return d.source.index == i || d.target.index == i; }).transition().style("opacity", 0.7);
-            $scope.svg.selectAll(".chord path")
-                .filter(function(d) { return d.source.index != i && d.target.index != i && d.source.index != si && d.target.index != si; })
-                .transition()
-                .style("opacity", 0.1);
+            $scope.toggleChordVisibility(TARGET_ONLY, BRIGHT, i);
+            $scope.toggleChordVisibility(ALL_EXCEPT_TARGETS, FADED, i, si);
         };
     };
 
-    $scope.selectDocType = function(id) {
+    $scope.listenForTabClick = function() {
+        var tabs = document.querySelectorAll('.nav-tabs a.ng-binding');
+        if (tabs && tabs.length > 0) {
+            for(var i = 0; i < tabs.length; i++) {
+                tabs[i].onclick = function() {
+                    if ($('#DocTypeVisualiserPlaceHolder > svg').attr('height') < 101) {
+                        window.setTimeout(function() {
+                            $scope.refreshGraph();
+                        }, 5);
+                    }
+                };
+            }
+        }
+        window.onresize = function() {
+            $scope.refreshGraph();
+        };
+    };
+
+    $scope.onDocTypeSelection = function(id) {
         if (!id) {
             return function(g, index) {
                 var docTypes = $scope.getDocTypes();
                 var selected = docTypes[index];
-                $scope.selectedDocType = {
-                    id: selected.id,
-                    name: selected.name,
-                    breadcrumb: $scope.getBreadcrumb(selected.id),
-                    compositions: $scope.getCompositions(selected.id),
-                    pagesUsingComp: $scope.getPagesUsingComp(selected.id)
-                };
-                $scope.svg.selectAll(".chord path").style("opacity", 0.1);
-                $scope.svg.selectAll(".chord path").filter(function(d) { return d.source.index == index || d.target.index == index; }).style("opacity", 0.7);
+                $scope.selectDocType(selected.id);
+                $scope.toggleChordVisibility(ALL_CHORDS, FADED);
+                $scope.toggleChordVisibility(TARGET_ONLY, BRIGHT, index);
             }
         } else {
-            var selected = $scope.getDocTypeById(id);
             var index = $scope.getIndexByDocTypeId(id);
-            $scope.selectedDocType = {
-                id: selected.id,
-                name: selected.name,
-                breadcrumb: $scope.getBreadcrumb(selected.id),
-                compositions: $scope.getCompositions(selected.id),
-                pagesUsingComp: $scope.getPagesUsingComp(selected.id)
-            };
-            var docTypes = $scope.getDocTypes();
-            $scope.svg.selectAll(".chord path").style("opacity", 0.1);
-            $scope.svg.selectAll(".chord path").filter(function(d) { return d.source.index == index || d.target.index == index; }).style("opacity", 0.7);
+            $scope.selectDocType(id);
+            $scope.toggleChordVisibility(ALL_CHORDS, FADED);
+            $scope.toggleChordVisibility(TARGET_ONLY, BRIGHT, index);
         }
-    };
-
-    $scope.toggleShowAll = function() {
-        $scope.deleteGraph();
-        $scope.createGraph();
     };
 
     /*--- Helper Functions ---*/
-
-    $scope.buildMatrix = function(isFiltered) {
-        var docTypes = $scope.docTypes;
-        if (isFiltered) {
-            docTypes = $scope.filterUnconnectedDocTypes($scope.docTypes);
-        }
-        if ($scope.hiddenDocTypes && $scope.hiddenDocTypes.length > 0) {
-            $scope.hiddenDocTypes.forEach(function(hdt, hdi) {
-                if (hdi) {
-                    docTypes.forEach(function(dt, i) {
-                        if (dt.id == hdi) {
-                            docTypes.splice(i, 1);
-                        }
-                    });
-                }
-            });
-        }
-        matrix = [];
-        if (docTypes && docTypes.length > 0) {
-            // Loop through each docType
-            docTypes.forEach(function(docType) {
-                var matrixRow = [];
-                var currentComps = docType.comps;
-                var currentId = docType.id;
-                // Loop through each docType to compare against this one.
-                docTypes.forEach(function(otherDocType) {
-                    var val = 0;
-                    // If other doctype's ID matches one of the compositions for this doctype,then val = 1.
-                    if (currentComps && currentComps.length > 0) {
-                        currentComps.forEach(function(cc) {
-                            if (cc == otherDocType.id) {
-                                val = 1;
-                            }
-                        });
-                    }
-                    // Alternatively, if this document's id is a compositionin the other doctype, then val = 1.
-                    if (otherDocType.compositions && otherDocType.compositions.length > 0) {
-                        otherDocType.compositions.forEach(function(odcc) {
-                            if (odcc == currentId) {
-                                val = 1;
-                            }
-                        });
-                    }
-                    // Push the val to the row
-                    matrixRow.push(val);
-                });
-                // For each doctype, push a row to the matrix.
-                matrix.push(matrixRow);
-            });
-        }
-        return matrix;
-    };
 
     $scope.createGraph = function() {
         var fill = d3.scale.category10();
@@ -146,16 +93,12 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             labels: $scope.getNames(),
             matrix: $scope.getMatrix()
         };
-        // Visualize
-        var chord = d3.layout.chord()
-            .padding(.05)
-            .sortSubgroups(d3.descending)
-            .matrix(data.matrix);
-        var width = document.querySelector('#DocTypeVisualiserPlaceHolder').offsetWidth - 200,
-            height = document.querySelector('#DocTypeVisualiserPlaceHolder').offsetHeight - 200,
-            r1 = height / 2,
-            innerRadius = Math.min(width, height) * .41,
-            outerRadius = innerRadius * 1.1;
+        var chord = d3.layout.chord().padding(.05).sortSubgroups(d3.descending).matrix(data.matrix);
+        var width = document.querySelector('#DocTypeVisualiserPlaceHolder').offsetWidth - 200;
+        var height = document.querySelector('#DocTypeVisualiserPlaceHolder').offsetHeight - 200;
+        var r1 = height / 2;
+        var innerRadius = Math.min(width, height) * .41;
+        var outerRadius = innerRadius * 1.1;
 
         $scope.svg = d3.select("#DocTypeVisualiserPlaceHolder").append("svg")
             .attr("width", width + 200)
@@ -175,8 +118,8 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             })
             .attr('stroke-width', 4)
             .attr("d", d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius))
-            .on("click", $scope.selectDocType())
-            .on("mouseover", $scope.fade());
+            .on("click", $scope.onDocTypeSelection())
+            .on("mouseover", $scope.onHoverOverChord());
 
         $scope.svg.append("g")
             .attr("class", "chord")
@@ -186,7 +129,7 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             .attr("d", d3.svg.chord().radius(innerRadius - 2))
             .style("fill", function(d) { return fill(d.target.index); })
             .style("stroke", function(d) { return fill(d.target.index); })
-            .style("opacity", 0.7);
+            .style("opacity", BRIGHT);
 
         $scope.svg.append("g").selectAll(".arc")
             .data(chord.groups)
@@ -308,17 +251,59 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
     }
 
     $scope.getMatrix = function() {
-        var matrix = $scope.matrix;
-        if (!$scope.showAll) {
-            matrix = $scope.buildMatrix(true);
+        var docTypes = $scope.getDocTypes();
+        if ($scope.hiddenDocTypes && $scope.hiddenDocTypes.length > 0) {
+            $scope.hiddenDocTypes.forEach(function(hdt, hdi) {
+                if (hdi) {
+                    docTypes.forEach(function(dt, i) {
+                        if (dt.id == hdi) {
+                            docTypes.splice(i, 1);
+                        }
+                    });
+                }
+            });
+        }
+        matrix = [];
+        if (docTypes && docTypes.length > 0) {
+            // Loop through each docType
+            docTypes.forEach(function(docType) {
+                var matrixRow = [];
+                var currentComps = docType.comps;
+                var currentId = docType.id;
+                // Loop through each docType to compare against this one.
+                docTypes.forEach(function(otherDocType) {
+                    var val = 0;
+                    // If other doctype's ID matches one of the compositions for this doctype,then val = 1.
+                    if (currentComps && currentComps.length > 0) {
+                        currentComps.forEach(function(cc) {
+                            if (cc == otherDocType.id) {
+                                val = 1;
+                            }
+                        });
+                    }
+                    // Alternatively, if this document's id is a compositionin the other doctype, then val = 1.
+                    if (otherDocType.compositions && otherDocType.compositions.length > 0) {
+                        otherDocType.compositions.forEach(function(odcc) {
+                            if (odcc == currentId) {
+                                val = 1;
+                            }
+                        });
+                    }
+                    // Push the val to the row
+                    matrixRow.push(val);
+                });
+                // For each doctype, push a row to the matrix.
+                matrix.push(matrixRow);
+            });
         }
         return matrix;
     };
 
     $scope.getNames = function() {
-        var names = $scope.names;
-        if (!$scope.showAll) {
-            names = $scope.filterUnconnectedDocTypes($scope.docTypes).map(function(docType) {
+        var names = [];
+        var docTypes = $scope.getDocTypes();
+        if (docTypes && docTypes.length > 0) {
+            names = docTypes.map(function(docType) {
                 return docType.name;
             });
         }
@@ -341,22 +326,22 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
         return pages;
     };
 
-    $scope.listenForTabClick = function() {
-        var tabs = document.querySelectorAll('.nav-tabs a.ng-binding');
-        if (tabs && tabs.length > 0) {
-            for(var i = 0; i < tabs.length; i++) {
-                tabs[i].onclick = function() {
-                    if ($('#DocTypeVisualiserPlaceHolder > svg').attr('height') < 101) {
-                        window.setTimeout(function() {
-                            $scope.toggleShowAll();
-                        }, 5);
-                    }
-                };
-            }
+    $scope.refreshGraph = function() {
+        $scope.deleteGraph();
+        $scope.createGraph();
+    };
+
+    $scope.selectDocType = function(id) {
+        if (id) {
+            var selected = $scope.getDocTypeById(id);
+            $scope.selectedDocType = {
+                id: selected.id,
+                name: selected.name,
+                breadcrumb: $scope.getBreadcrumb(selected.id),
+                compositions: $scope.getCompositions(selected.id),
+                pagesUsingComp: $scope.getPagesUsingComp(selected.id)
+            };
         }
-        window.onresize = function() {
-            $scope.toggleShowAll();
-        };
     };
 
     $scope.sortByCompositions = function(docTypes) {
@@ -366,6 +351,34 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             });
         }
         return docTypes;
+    };
+
+    $scope.toggleChordVisibility = function(filter, opacity, index, selectedIndex) {
+        if (filter === FADED || filter === BRIGHT) {
+            opacity = filter;
+            filter = false;
+        }
+        if (!filter) {
+            filter = ALL_CHORDS;
+        }
+        if (!opacity) {
+            opacity = BRIGHT;
+        }
+        switch (filter) {
+            case ALL_CHORDS:
+                $scope.svg.selectAll(".chord path").transition().style("opacity", opacity);
+                break;
+            case TARGET_ONLY:
+                $scope.svg.selectAll(".chord path").filter(function(d) { return d.source.index == index || d.target.index == index; }).transition().style("opacity", opacity);
+                break;
+            case ALL_EXCEPT_TARGETS:
+                if (selectedIndex == undefined) {
+                    $scope.svg.selectAll(".chord path").filter(function(d) { return d.source.index != index && d.target.index != index; }).transition().style("opacity", opacity);
+                } else {
+                    $scope.svg.selectAll(".chord path").filter(function(d) { return d.source.index != index && d.target.index != index && d.source.index != selectedIndex && d.target.index != selectedIndex; }).transition().style("opacity", opacity);
+                }
+                break;
+        };
     };
 
     /*---- Init ----*/

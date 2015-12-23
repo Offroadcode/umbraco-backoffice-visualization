@@ -12,14 +12,14 @@
 						Inheritance:
 						<span ng-repeat="crumb in selectedDocType.breadcrumb track by $index">
 							<span ng-show="$index > 0"> > </span>
-							<a ng-click="selectDocType(crumb.id)">{{crumb.name}}</a> <a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{crumb.id}}"><i class="icon-edit"></i></a>
+							<a ng-click="onDocTypeSelection(crumb.id)">{{crumb.name}}</a> <a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{crumb.id}}"><i class="icon-edit"></i></a>
 						</span>
 					</p>
 					<div class="compositions" ng-show="selectedDocType.compositions.length > 0">
 						Compositions:
 						<ul>
 							<li ng-repeat="comp in selectedDocType.compositions track by $index">
-								<a ng-click="selectDocType(comp.id)">{{comp.name}}</a> <a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{comp.id}}"><i class="icon-edit"></i></a>
+								<a ng-click="onDocTypeSelection(comp.id)">{{comp.name}}</a> <a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{comp.id}}"><i class="icon-edit"></i></a>
 							</li>
 						</ul>
 					</div>
@@ -27,7 +27,7 @@
 						Pages using this composition:
 						<ul>
 							<li ng-repeat="comp in selectedDocType.pagesUsingComp track by $index">
-								<a ng-click="selectDocType(comp.id)">{{comp.name}}</a> <a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{comp.id}}"><i class="icon-edit"></i></a>
+								<a ng-click="onDocTypeSelection(comp.id)">{{comp.name}}</a> <a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{comp.id}}"><i class="icon-edit"></i></a>
 							</li>
 						</ul>
 					</div>
@@ -35,7 +35,7 @@
 				<div class="doctype-graph--settings">
 					<h4>Settings</h4>
 					<label>
-						<input type="checkbox" ng-model="showAll" ng-change="toggleShowAll()"> Show doctypes without compositions
+						<input type="checkbox" ng-model="showAll" ng-change="refreshGraph()"> Show doctypes without compositions
 					</label>
 				</div>
 			</div>
@@ -60,7 +60,7 @@
 			<!--TODO: Hovering over a row should hover over the item in the graph and vice-versa-->
 			<tr ng-repeat="docType in getDocTypes()">
 				<!--td><input type="checkbox" ng-checked="hiddenDocTypes[docType.id]" ng-click="toggleHideState(docType.id)" /></td-->
-				<td><a ng-click="selectDocType(docType.id)">{{docType.name}}</a></td>
+				<td><a ng-click="onDocTypeSelection(docType.id)">{{docType.name}}</a></td>
 				<!--TODO: Ideally, I would like all of these to be links and if you click on them, it will take you to the DocType to edit it-->
 				<td>
 					<div ng-show="docType.parentId > 0">
