@@ -4,6 +4,7 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
     var ALL_CHORDS = 0;
     var TARGET_ONLY = 1;
     var ALL_EXCEPT_TARGETS = 2;
+    var TARGET_EXCEPT_SELECTED = 3;
     var FADED = 0.1;
     var BRIGHT = 0.7;
 
@@ -50,6 +51,15 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             $scope.toggleChordVisibility(ALL_EXCEPT_TARGETS, FADED, i, si);
         };
     };
+
+    $scope.onMouseOutFromChord = function() {
+        return function(g, i) {
+            var si = $scope.getIndexByDocTypeId($scope.selectedDocType.id);
+            if (si != i) {
+                $scope.toggleChordVisibility(TARGET_EXCEPT_SELECTED, FADED, i, si);
+            }
+        };
+    }
 
     $scope.listenForTabClick = function() {
         var tabs = document.querySelectorAll('.nav-tabs a.ng-binding');
@@ -136,7 +146,8 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             .attr('stroke-width', 4)
             .attr("d", d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius))
             .on("click", $scope.onDocTypeSelection())
-            .on("mouseover", $scope.onHoverOverChord());
+            .on("mouseover", $scope.onHoverOverChord())
+            .on("mouseout", $scope.onMouseOutFromChord());
 
         $scope.svg.append("g")
             .attr("class", "chord")
@@ -345,6 +356,12 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
         return pages;
     };
 
+    $scope.isComposition = function(id) {
+        var docType = $scope.getDocTypeById(id);
+        var isComposition = ($scope.getPagesUsingComp(id).length > 0) ? true : false;
+        return isComposition;
+    };
+
     $scope.refreshGraph = function() {
         $scope.deleteGraph();
         $scope.createGraph();
@@ -397,6 +414,9 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
                 } else {
                     $scope.svg.selectAll(".chord path").filter(function(d) { return d.source.index != index && d.target.index != index && d.source.index != selectedIndex && d.target.index != selectedIndex; }).transition().style("opacity", opacity);
                 }
+                break;
+            case TARGET_EXCEPT_SELECTED:
+                $scope.svg.selectAll(".chord path").filter(function(d) { return (d.source.index == index || d.target.index == index) && d.source.index != selectedIndex; }).transition().style("opacity", opacity);
                 break;
         };
     };

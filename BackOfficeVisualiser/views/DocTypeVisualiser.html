@@ -67,7 +67,10 @@
 						<a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{docType.parentId}}">{{getDocTypeById(docType.parentId).name}}</a>
 					</div>
 				</td>
-				<td>No</td>
+				<td>
+					<span ng-show="!isComposition(docType.id)">No</span>
+					<span ng-show="isComposition(docType.id)">Yes</span>
+				</td>
 				<!--TODO: Ideally, I would like all of these to be links and if you click on them, it will take you to the DocType to edit it-->
 				<td>
 					<span ng-repeat="comp in getCompositions(docType.id) track by $index"><span ng-show="$index > 0">, </span><a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{comp.parentId}}">{{comp.name}}</a></span>
