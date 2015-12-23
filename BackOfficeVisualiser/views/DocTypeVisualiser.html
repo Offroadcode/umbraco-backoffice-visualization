@@ -47,19 +47,19 @@
 	<table class="table table-hover doctype-graph--table">
 		<thead>
 			<tr>
-				<!--th>Hide</th-->
+				<th>Hide</th>
 				<!--TODO: The icon classes should switch between 'icon-navigation-up' and 'icon-navigation-down' depending on how the sorting is being done. My thought is they should all default up and switch to down?-->
 				<th>Name <!--<i class="icon-navigation-up"></i>--></th>
 				<th>Inheritance  <!--<i class="icon-navigation-down"></i>--></th>
-				 <!--<th>Is Comp <i class="icon-navigation-down"></i></th>-->
+				<th>Is Comp <!--<i class="icon-navigation-down"></i>--></th>
 				<th>Compositions/Associated DocTypes</th>
 				<th>ID  <!--<i class="icon-navigation-down"></i>--></th>
 			</tr>
 		</thead>
 		<tbody>
 			<!--TODO: Hovering over a row should hover over the item in the graph and vice-versa-->
-			<tr ng-repeat="docType in getDocTypes()">
-				<!--td><input type="checkbox" ng-checked="hiddenDocTypes[docType.id]" ng-click="toggleHideState(docType.id)" /></td-->
+			<tr ng-repeat="docType in getDocTypes(true)">
+				<td><input type="checkbox" ng-checked="hiddenDocTypes[docType.id]" ng-click="toggleDocTypeVisibility(docType.id)" /></td>
 				<td><a ng-click="onDocTypeSelection(docType.id)">{{docType.name}}</a></td>
 				<!--TODO: Ideally, I would like all of these to be links and if you click on them, it will take you to the DocType to edit it-->
 				<td>
@@ -67,7 +67,7 @@
 						<a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{docType.parentId}}">{{getDocTypeById(docType.parentId).name}}</a>
 					</div>
 				</td>
-				<!--<td>No</td>-->
+				<td>No</td>
 				<!--TODO: Ideally, I would like all of these to be links and if you click on them, it will take you to the DocType to edit it-->
 				<td>
 					<span ng-repeat="comp in getCompositions(docType.id) track by $index"><span ng-show="$index > 0">, </span><a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{comp.parentId}}">{{comp.name}}</a></span>

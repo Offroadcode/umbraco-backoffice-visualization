@@ -29,6 +29,7 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
 
     $scope.setVariables = function() {
         $scope.docTypes = [];
+        $scope.hiddenDocTypes = [];
         $scope.selectedDocType = {
             id: -1,
             name: '',
@@ -79,10 +80,26 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             }
         } else {
             var index = $scope.getIndexByDocTypeId(id);
+            var needsRefresh = ($scope.hiddenDocTypes[id]) ? true : false;
             $scope.selectDocType(id);
+            if (needsRefresh) {
+                // need to refresh graph because unhiding a doctype.
+                $scope.refreshGraph();
+                // need to refresh index to make new chords appear
+                index = $scope.getIndexByDocTypeId(id);
+            }
             $scope.toggleChordVisibility(ALL_CHORDS, FADED);
             $scope.toggleChordVisibility(TARGET_ONLY, BRIGHT, index);
         }
+    };
+
+    $scope.toggleDocTypeVisibility = function(id) {
+        if (!$scope.hiddenDocTypes[id]) {
+            $scope.hiddenDocTypes[id] = true;
+        } else {
+            $scope.hiddenDocTypes[id] = false;
+        }
+        $scope.refreshGraph();
     };
 
     /*--- Helper Functions ---*/
@@ -217,10 +234,23 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
         return compositions;
     };
 
-    $scope.getDocTypes = function() {
+    $scope.getDocTypes = function(shouldNotFilterHidden) {
         var docTypes = $scope.docTypes;
         if (!$scope.showAll) {
             docTypes = $scope.filterUnconnectedDocTypes($scope.docTypes);
+            if (!shouldNotFilterHidden) {
+                if ($scope.hiddenDocTypes && $scope.hiddenDocTypes.length > 0) {
+                    $scope.hiddenDocTypes.forEach(function(isHidden, hiddenIndex) {
+                        if (isHidden) {
+                            docTypes.forEach(function(dt, docTypeIndex) {
+                                if (dt.id == hiddenIndex) {
+                                    docTypes.splice(docTypeIndex, 1);
+                                }
+                            });
+                        }
+                    });
+                }
+            }
         }
         return docTypes;
     };
@@ -252,17 +282,6 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
 
     $scope.getMatrix = function() {
         var docTypes = $scope.getDocTypes();
-        if ($scope.hiddenDocTypes && $scope.hiddenDocTypes.length > 0) {
-            $scope.hiddenDocTypes.forEach(function(hdt, hdi) {
-                if (hdi) {
-                    docTypes.forEach(function(dt, i) {
-                        if (dt.id == hdi) {
-                            docTypes.splice(i, 1);
-                        }
-                    });
-                }
-            });
-        }
         matrix = [];
         if (docTypes && docTypes.length > 0) {
             // Loop through each docType
@@ -334,6 +353,7 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
     $scope.selectDocType = function(id) {
         if (id) {
             var selected = $scope.getDocTypeById(id);
+            $scope.hiddenDocTypes[selected.id] = false;
             $scope.selectedDocType = {
                 id: selected.id,
                 name: selected.name,
