@@ -8,13 +8,13 @@
 				</div>
 				<div class="doctype-graph--item" ng-show="selectedDocType.name != ''">
 					<h4>DocType Name: <a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{selectedDocType.id}}">{{selectedDocType.name}}</a></h4>
-					<div class="inheritance" ng-show="selectedDocType.breadcrumb.length > 0">
+					<p class="inheritance" ng-show="selectedDocType.breadcrumb.length > 0">
 						Inheritance:
 						<span ng-repeat="crumb in selectedDocType.breadcrumb track by $index">
 							<span ng-show="$index > 0"> > </span>
 							<a ng-click="selectDocType(crumb.id)">{{crumb.name}}</a> <a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{crumb.id}}"><i class="icon-edit"></i></a>
 						</span>
-					</div>
+					</p>
 					<div class="compositions" ng-show="selectedDocType.compositions.length > 0">
 						Compositions:
 						<ul>
