@@ -55,8 +55,12 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
     $scope.onMouseOutFromChord = function() {
         return function(g, i) {
             var si = $scope.getIndexByDocTypeId($scope.selectedDocType.id);
-            if (si != i) {
-                $scope.toggleChordVisibility(TARGET_EXCEPT_SELECTED, FADED, i, si);
+            if (si != -1) {
+                if (si != i) {
+                    $scope.toggleChordVisibility(TARGET_EXCEPT_SELECTED, FADED, i, si);
+                }
+            } else {
+                $scope.toggleChordVisibility(ALL_CHORDS, BRIGHT);
             }
         };
     }
