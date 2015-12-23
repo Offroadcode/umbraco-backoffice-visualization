@@ -138,10 +138,10 @@ angular.module("umbraco").controller("DocTypeVisualiser.Controller", function ($
             .data(chord.groups).enter().append("path")
             .attr("class", "arc")
             .style("fill", function(d) {
-                return fill(d.index);
+                return ($scope.isComposition($scope.getDocTypes()[d.index].id)) ? '#f57020' : fill(d.index);
             })
             .style("stroke", function(d) {
-                return fill(d.index);
+                return ($scope.isComposition($scope.getDocTypes()[d.index].id)) ? '#f57020' : fill(d.index);
             })
             .attr('stroke-width', 4)
             .attr("d", d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius))
