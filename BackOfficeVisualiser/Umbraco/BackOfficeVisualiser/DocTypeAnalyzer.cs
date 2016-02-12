@@ -31,7 +31,6 @@ namespace BackOfficeVisualiser
             docTypeModel.Id = contentType.Id;
             docTypeModel.ParentId = contentType.ParentId;
             model.DocumentTypes.Add(docTypeModel);
-
         }
     }
 }

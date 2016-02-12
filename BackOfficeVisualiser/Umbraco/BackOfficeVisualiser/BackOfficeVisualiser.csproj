@@ -250,10 +250,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="API\Attributes\CamelCaseControllerAttribute.cs" />
+    <Compile Include="API\PropertyTypeVisualiserController.cs" />
     <Compile Include="API\DocTypeVisualiserController.cs" />
+    <Compile Include="PropertyTypeAnalyzer.cs" />
     <Compile Include="DocTypeAnalyzer.cs" />
     <Compile Include="Install\PackageActions\BackOfficeVisualiserPackageAction.cs" />
     <Compile Include="Install\PackageActions\RemoveOldInstallation.cs" />
+    <Compile Include="Models\PropertyTypeAnalyzerResult.cs" />
+    <Compile Include="Models\PropertyTypeModel.cs" />
     <Compile Include="Models\CompositionModel.cs" />
     <Compile Include="Models\DocTypeAnalyzerResult.cs" />
     <Compile Include="Models\DocTypeModel.cs" />

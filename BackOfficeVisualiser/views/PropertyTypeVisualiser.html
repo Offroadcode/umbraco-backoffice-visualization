@@ -1,0 +1,83 @@
+<div class="doctype-graph--wrapper" ng-controller="DocTypeVisualiser.Controller">
+	<h3>DocType Composition Relationships</h3>
+	<div class="row">
+		<div class="span3">
+			<div>
+				<div class="doctype-graph--welcome" ng-show="selectedDocType.name == ''">
+					<p>This <a href="https://en.wikipedia.org/wiki/Chord_diagram" target="_blank">chord diagram</a> displays the relationships between Document Types, inherited Document Types, and DocType Compositions. Hovering over an item will display the other Document Types it is connected to, and clicking on one displays more in-depth text information about inheritance and related compositions or non-composition Document Types.</p>
+				</div>
+				<div class="doctype-graph--item" ng-show="selectedDocType.name != ''">
+					<h4>DocType Name: <a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{selectedDocType.id}}">{{selectedDocType.name}}</a></h4>
+					<p class="inheritance" ng-show="selectedDocType.breadcrumb.length > 0">
+						Inheritance:
+						<span ng-repeat="crumb in selectedDocType.breadcrumb track by $index">
+							<span ng-show="$index > 0"> > </span>
+							<a ng-click="onDocTypeSelection(crumb.id)">{{crumb.name}}</a> <a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{crumb.id}}"><i class="icon-edit"></i></a>
+						</span>
+					</p>
+					<div class="compositions" ng-show="selectedDocType.compositions.length > 0">
+						Compositions:
+						<ul>
+							<li ng-repeat="comp in selectedDocType.compositions track by $index">
+								<a ng-click="onDocTypeSelection(comp.id)">{{comp.name}}</a> <a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{comp.id}}"><i class="icon-edit"></i></a>
+							</li>
+						</ul>
+					</div>
+					<div class="pages-by-composition" ng-show="selectedDocType.pagesUsingComp.length > 0">
+						Pages using this composition:
+						<ul>
+							<li ng-repeat="comp in selectedDocType.pagesUsingComp track by $index">
+								<a ng-click="onDocTypeSelection(comp.id)">{{comp.name}}</a> <a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{comp.id}}"><i class="icon-edit"></i></a>
+							</li>
+						</ul>
+					</div>
+				</div>
+				<div class="doctype-graph--settings">
+					<h4>Settings</h4>
+					<label>
+						<input type="checkbox" ng-model="showAll" ng-change="refreshGraph()"> Show doctypes without compositions
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="span9">
+			<div id="DocTypeVisualiserPlaceHolder" class="doctype-graph"></div>
+		</div>
+	</div>
+	<table class="table table-hover doctype-graph--table">
+		<thead>
+			<tr>
+				<th>Hide</th>
+				<!--TODO: The icon classes should switch between 'icon-navigation-up' and 'icon-navigation-down' depending on how the sorting is being done. My thought is they should all default up and switch to down?-->
+				<th>Name <!--<i class="icon-navigation-up"></i>--></th>
+				<th>Inheritance  <!--<i class="icon-navigation-down"></i>--></th>
+				<th>Is Comp <!--<i class="icon-navigation-down"></i>--></th>
+				<th>Compositions/Associated DocTypes</th>
+				<th>ID  <!--<i class="icon-navigation-down"></i>--></th>
+			</tr>
+		</thead>
+		<tbody>
+			<!--TODO: Hovering over a row should hover over the item in the graph and vice-versa-->
+			<tr ng-repeat="docType in getDocTypes(true)">
+				<td><input type="checkbox" ng-checked="hiddenDocTypes[docType.id]" ng-click="toggleDocTypeVisibility(docType.id)" /></td>
+				<td><a ng-click="onDocTypeSelection(docType.id)">{{docType.name}}</a></td>
+				<!--TODO: Ideally, I would like all of these to be links and if you click on them, it will take you to the DocType to edit it-->
+				<td>
+					<div ng-show="docType.parentId > 0">
+						<a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{docType.parentId}}">{{getDocTypeById(docType.parentId).name}}</a>
+					</div>
+				</td>
+				<td>
+					<span ng-show="!isComposition(docType.id)">No</span>
+					<span ng-show="isComposition(docType.id)">Yes</span>
+				</td>
+				<!--TODO: Ideally, I would like all of these to be links and if you click on them, it will take you to the DocType to edit it-->
+				<td>
+					<span ng-repeat="comp in getCompositions(docType.id) track by $index"><span ng-show="$index > 0">, </span><a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{comp.parentId}}">{{comp.name}}</a></span>
+					<span ng-repeat="page in getPagesUsingComp(docType.id) track by $index"><span ng-show="$index > 0">, </span><a href="/umbraco/#/settings/framed/%252Fumbraco%252Fsettings%252FeditNodeTypeNew.aspx%253Fid%253D{{page.parentId}}">{{page.name}}</a></span>
+				</td>
+				<td>{{docType.id}}</td>
+			</tr>
+		</tbody>
+	</table>
+</div>

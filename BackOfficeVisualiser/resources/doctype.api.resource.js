@@ -4,6 +4,7 @@ angular.module("umbraco.resources").factory("doctypeApiResource", function ($htt
 
 	doctypeApiResource.getViewModel = function () {
 		return $http.get('/umbraco/backoffice/api/DocTypeVisualiser/GetViewModel').then(function(response) {
+			console.log(response.data);
 			return response.data;
 		});
 	};

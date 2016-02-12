@@ -46,11 +46,11 @@ module.exports = function(grunt) {
       },
       dist: {
         src: [
-            'BackOfficeVisualiser/doctype.visualiser.namespaces.js',
-            'BackOfficeVisualiser/models/doctype.visualiser.models.js',
 			'BackOfficeVisualiser/resources/d3.resource.js',
 			'BackOfficeVisualiser/resources/doctype.api.resource.js',
-            'BackOfficeVisualiser/controllers/doctype.visualiser.controller.js'
+			'BackOfficeVisualiser/resources/propertytype.api.resource.js',
+            'BackOfficeVisualiser/controllers/doctype.visualiser.controller.js',
+			'BackOfficeVisualiser/controllers/propertytype.visualiser.controller.js'
         ],
         dest: '<%= basePath %>/js/backoffice.visualiser.js'
       }
@@ -66,7 +66,8 @@ module.exports = function(grunt) {
         html: {
             cwd: 'BackOfficeVisualiser/views/',
             src: [
-                'DocTypeVisualiser.html'
+                'DocTypeVisualiser.html',
+				'PropertyTypeVisualiser.html'
             ],
             dest: '<%= basePath %>/views/',
             expand: true,
@@ -145,11 +146,13 @@ module.exports = function(grunt) {
       tmp: ['tmp'],
       html: [
         'BackOfficeVisualiser/views/*.html',
-        '!BackOfficeVisualiser/views/DocTypeVisualiser.html'
+        '!BackOfficeVisualiser/views/DocTypeVisualiser.html',
+		'!BackOfficeVisualiser/views/PropertyTypeVisualiser.html'
         ],
       js: [
         'BackOfficeVisualiser/controllers/*.js',
-        '!BackOfficeVisualiser/controllers/doctype.visualiser.controller.js'
+        '!BackOfficeVisualiser/controllers/doctype.visualiser.controller.js',
+		'!BackOfficeVisualiser/controllers/propertytype.visualiser.controller.js'
       ],
       css: [
         'BackOfficeVisualiser/css/*.css',
