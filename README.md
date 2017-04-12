@@ -4,9 +4,7 @@ The Umbraco Backoffice Visualization package is a dashboard that displays visual
 
 [You can view the demo here](https://www.youtube.com/watch?v=pmRFipRIfCA).
 
-<img src="https://docs.google.com/uc?id=0B1BeRPYxbA_SeE1lNGYtSkszTEk&export=download" width="285" title="DocType Composition Relationships Landing" />
-<img src="https://docs.google.com/uc?id=0B1BeRPYxbA_SZDVVZ1oweW55WDg&export=download" width="285" title="DocType Composition Relationships Table" />
-<img src="https://docs.google.com/uc?id=0B1BeRPYxbA_SRmV6SjNJQlpFTGc&export=download" width="285" title="DocType Compostion Relationships, Showing All DocTypes" />
+<img src="https://docs.google.com/uc?id=0B1BeRPYxbA_SeE1lNGYtSkszTEk&export=download" width="285" title="DocType Composition Relationships Landing" /> <img src="https://docs.google.com/uc?id=0B1BeRPYxbA_SZDVVZ1oweW55WDg&export=download" width="285" title="DocType Composition Relationships Table" /> <img src="https://docs.google.com/uc?id=0B1BeRPYxbA_SRmV6SjNJQlpFTGc&export=download" width="285" title="DocType Compostion Relationships, Showing All DocTypes" />
 
 #### Change Log
 
